@@ -1,20 +1,10 @@
 {
   "version": 2,
-  "name": "rapid-reach-backend",
-  "builds": [
-    {
-      "src": "backend/src/server.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["backend/**"]
-      }
-    }
-  ],
+  "builds": [{ "src": "backend/server.js", "use": "@vercel/node" }],
   "routes": [
-    { "src": "/api/(.*)", "dest": "backend/src/server.js" },
-    { "src": "/(.*)", "dest": "backend/src/server.js" }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+    {
+      "src": "/(.*)",
+      "dest": "backend/server.js"
+    }
+  ]
 }

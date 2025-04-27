@@ -4,9 +4,7 @@
   "description": "Rapid Reach Application",
   "main": "backend/src/server.js",
   "scripts": {
-    "start": "node backend/src/server.js",
-    "dev": "node backend/src/server.js",
-    "build": "echo \"No build step needed\" && exit 0",
+    "start": "node server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
