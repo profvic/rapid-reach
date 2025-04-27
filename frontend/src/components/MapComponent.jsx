@@ -259,33 +259,40 @@ const MapComponent = ({
 
   return (
     <div style={{ position: "relative", width, height }}>
-      <div 
-        ref={mapContainer} 
+      <div
+        ref={mapContainer}
         style={{ width: "100%", height: "100%", borderRadius: "4px" }}
       />
-      {draggableMarker && (
-        <div style={{ 
-          position: "absolute", 
-          bottom: "10px", 
-          right: "10px", 
-          zIndex: 1 
-        }}>
-          <button
-            onClick={handleLocateMe}
-            style={{
-              padding: "8px 12px",
-              borderRadius: "5px",
-              border: "none",
-              backgroundColor: "#28a745",
-              color: "white",
-              cursor: "pointer",
-              fontSize: "14px"
-            }}
-          >
-            Locate Me
-          </button>
-        </div>
-      )}
+      <div style={{
+        position: "absolute",
+        bottom: "10px",
+        right: "10px",
+        zIndex: 1
+      }}>
+        <button
+          onClick={handleLocateMe}
+          style={{
+            padding: "8px 12px",
+            borderRadius: "5px",
+            border: "none",
+            backgroundColor: "#FF3A3A",
+            color: "white",
+            cursor: "pointer",
+            fontSize: "14px",
+            fontWeight: "bold",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.3)"
+          }}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          Locate Me
+        </button>
+      </div>
     </div>
   );
 };
