@@ -75,8 +75,6 @@ npm run dev
 
 ### 1. Login
 ![Login](https://github.com/pruthvik-sheth/rapid-reach/blob/main/Images/Login.png?raw=true)
-)
-
 
 ### 2. Register
 ![Register](https://github.com/pruthvik-sheth/rapid-reach/blob/main/Images/Register.png?raw=true)
