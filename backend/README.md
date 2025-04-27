@@ -1,38 +1,118 @@
-# RapidReach Backend Deployment Guide
+# 📂 Backend - RapidReach
 
-This guide explains how to deploy the RapidReach backend to Vercel.
+## Overview
+This is the backend for **RapidReach**, a real-time emergency assistance system.  
+It provides:
+- User Authentication
+- Emergency Reporting & Management
+- Notification System
+- WebSocket-powered real-time communication for SOS alerts
 
-## Deployment Steps
+Built with **Node.js**, **Express.js**, **MongoDB**, and **Socket.IO**.
 
-1. Install the Vercel CLI:
+---
+
+## 🏗️ Folder Structure
+
+```
+backend/
+├── src/
+│   ├── config/
+│   │   └── config.js
+│   ├── constants/
+│   │   └── socket.events.js
+│   ├── controllers/
+│   │   ├── auth.controller.js
+│   │   ├── emergency.controller.js
+│   │   ├── mapbox.controller.js
+│   │   ├── notification.controller.js
+│   │   └── user.controller.js
+│   ├── middleware/
+│   │   └── auth.middleware.js
+│   ├── models/
+│   │   ├── emergency.model.js
+│   │   ├── notification.model.js
+│   │   └── user.model.js
+│   ├── routes/
+│   │   ├── auth.routes.js
+│   │   ├── emergency.routes.js
+│   │   ├── mapbox.routes.js
+│   │   ├── notification.routes.js
+│   │   └── user.routes.js
+│   ├── services/
+│   │   └── socket.service.js
+│   └── utils/
+│       └── apiResponse.js
+│   ├── app.js
+│   ├── server.js
+├── .env
+├── package.json
+├── README.md
+```
+
+---
+
+## ⚙️ Installation
+
+1. Go to the `backend/` folder:
+   ```bash
+   cd backend
    ```
-   npm install -g vercel
+
+2. Install dependencies:
+   ```bash
+   npm install
    ```
 
-2. Login to Vercel:
+3. Create a `.env` file:
    ```
-   vercel login
+   PORT=5000
+   MONGO_URI=your_mongodb_connection_string
+   JWT_SECRET=your_jwt_secret_key
+   MAPBOX_TOKEN=your_mapbox_token
+   FRONTEND_URL=http://localhost:5173
    ```
 
-3. Deploy the backend:
+4. Start the backend server:
+   ```bash
+   npm run dev
    ```
-   vercel
-   ```
 
-## Environment Variables
+---
 
-You need to set up the following environment variables in the Vercel dashboard:
+## 🚀 APIs Overview
 
-- `MONGODB_URI`: Your MongoDB connection string
-- `JWT_SECRET`: Secret key for JWT token generation
-- `MAPBOX_ACCESS_TOKEN`: Your Mapbox access token
-- `AWS_REGION`: AWS region (if using AWS services)
-- `AWS_ACCESS_KEY_ID`: AWS access key (if using AWS services)
-- `AWS_SECRET_ACCESS_KEY`: AWS secret key (if using AWS services)
+| Method | Endpoint | Description |
+|:------:|:--------:|:-----------:|
+| POST | `/api/auth/register` | Register a new user |
+| POST | `/api/auth/login` | Login user |
+| GET  | `/api/emergencies/nearby` | Fetch nearby emergencies |
+| POST | `/api/emergencies/report` | Report new emergency |
+| POST | `/api/emergencies/respond` | Respond to an emergency |
+| GET  | `/api/notifications/` | Get user notifications |
 
-## Important Notes
+---
 
-- The backend is configured to run on Node.js
-- Socket.io is used for real-time communication
-- The deployment is configured to use 1024MB of memory and has a maximum execution duration of 10 seconds
-- All API routes are directed to the main server.js entry point
+## 🔥 Key Features
+- JWT Authentication 🔑
+- MongoDB database connection 🛢️
+- REST APIs for Emergencies, Users, Notifications 📩
+- Real-time WebSocket (Socket.IO) for instant SOS alerts 🚨
+- Modular folder structure and clean code 🧹
+
+---
+
+## 👥 Tech Stack
+- Node.js
+- Express.js
+- MongoDB (Mongoose)
+- Socket.IO
+- Mapbox Geocoding & Routing APIs
+- JWT (Authentication)
+
+---
+
+# ✨ Final Notes:
+- Make sure your backend (`localhost:5000`) and frontend (`localhost:5173`) are both running.
+- Mapbox API key is required for location-related features.
+- MongoDB Atlas or local MongoDB setup is required for database.
