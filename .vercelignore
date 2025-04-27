@@ -1,0 +1,9 @@
+# Ignore everything except the backend folder
+/*
+!backend/
+
+# Ignore node_modules in the backend folder
+backend/node_modules/
+
+# Ignore any logs or local environment files
+backend/*.log
