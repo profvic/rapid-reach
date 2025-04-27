@@ -128,12 +128,9 @@ We envision RapidReach as a platform that saves time, saves lives.
 
 ## 👥 Team Members
 - Yugm Patel
-- [Add teammates if needed]
-
----
-
-## 🚀 Live Link (Optional)
-_(Add when deployed)_
+- Pruthvik Sheth
+- Shubham Kothiya
+- Mansi Patel
 
 ---
 
