@@ -122,19 +122,81 @@ const emergencySlice = createSlice({
     },
     updateEmergencyInRealtime: (state, action) => {
       // For socket.io updates
-      const updatedEmergency = action.payload;
+      const updatedData = action.payload;
 
-      // Update in emergencies list
-      const index = state.emergencies.findIndex(
-        (e) => e._id === updatedEmergency._id
-      );
-      if (index !== -1) {
-        state.emergencies[index] = updatedEmergency;
-      }
+      // If this is a responder update, we need to handle it differently
+      if (updatedData.responderUpdated || updatedData.responderAdded) {
+        // If we have a current emergency and it matches the ID
+        if (state.currentEmergency && state.currentEmergency._id === updatedData._id) {
+          // Find the responder in the current emergency
+          const responderIndex = state.currentEmergency.responders.findIndex(
+            r => r.userId === updatedData.responder._id ||
+                (r.userId && r.userId._id === updatedData.responder._id)
+          );
 
-      // Update current emergency if it's the one being viewed
-      if (state.currentEmergency?._id === updatedEmergency._id) {
-        state.currentEmergency = updatedEmergency;
+          // If responder exists, update their status
+          if (responderIndex !== -1) {
+            state.currentEmergency.responders[responderIndex].status = updatedData.responder.status;
+          }
+          // If responder doesn't exist and this is a new responder, add them
+          else if (updatedData.responderAdded) {
+            state.currentEmergency.responders.push({
+              userId: updatedData.responder._id,
+              status: updatedData.responder.status
+            });
+          }
+
+          // Update emergency status if needed
+          if (state.currentEmergency.status === 'active' && state.currentEmergency.responders.length > 0) {
+            state.currentEmergency.status = 'responding';
+          }
+        }
+
+        // Also update in the emergencies list if it exists there
+        const index = state.emergencies.findIndex(e => e._id === updatedData._id);
+        if (index !== -1) {
+          // If we have responder info in the list, update it
+          if (state.emergencies[index].responders) {
+            const responderIndex = state.emergencies[index].responders.findIndex(
+              r => r.userId === updatedData.responder._id ||
+                  (r.userId && r.userId._id === updatedData.responder._id)
+            );
+
+            if (responderIndex !== -1) {
+              state.emergencies[index].responders[responderIndex].status = updatedData.responder.status;
+            } else if (updatedData.responderAdded) {
+              state.emergencies[index].responders.push({
+                userId: updatedData.responder._id,
+                status: updatedData.responder.status
+              });
+            }
+
+            // Update emergency status if needed
+            if (state.emergencies[index].status === 'active' && state.emergencies[index].responders.length > 0) {
+              state.emergencies[index].status = 'responding';
+            }
+          }
+        }
+      } else {
+        // Regular emergency update
+        // Update in emergencies list
+        const index = state.emergencies.findIndex(
+          (e) => e._id === updatedData._id
+        );
+        if (index !== -1) {
+          state.emergencies[index] = {
+            ...state.emergencies[index],
+            ...updatedData
+          };
+        }
+
+        // Update current emergency if it's the one being viewed
+        if (state.currentEmergency?._id === updatedData._id) {
+          state.currentEmergency = {
+            ...state.currentEmergency,
+            ...updatedData
+          };
+        }
       }
     },
   },

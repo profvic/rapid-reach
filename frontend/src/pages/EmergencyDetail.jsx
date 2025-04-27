@@ -35,6 +35,10 @@ const EmergencyDetail = () => {
   const [responding, setResponding] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [mapMarkers, setMapMarkers] = useState([]);
+  const [routeCoordinates, setRouteCoordinates] = useState(null);
+  const [showDirections, setShowDirections] = useState(false);
+  const [enableRealTimeTracking, setEnableRealTimeTracking] = useState(false);
+  const [realTimeLocation, setRealTimeLocation] = useState(null);
   const mapRef = useRef(null);
   
   // Default to San Francisco if no location is available
@@ -64,7 +68,7 @@ const EmergencyDetail = () => {
             <p class="text-sm">${currentEmergency.description}</p>
           `
         },
-        // User marker
+        // User marker (only show if not using real-time tracking)
         {
           id: 'user',
           longitude: userLng,
@@ -78,6 +82,12 @@ const EmergencyDetail = () => {
       
       // Get directions
       getDirections(userLng, userLat, emergencyCoords[0], emergencyCoords[1]);
+      
+      // If user is a responder, automatically show directions and enable tracking
+      if (isResponder()) {
+        setShowDirections(true);
+        setEnableRealTimeTracking(true);
+      }
     }
   }, [currentEmergency, currentLocation]);
   
@@ -97,8 +107,8 @@ const EmergencyDetail = () => {
           steps: route.legs[0].steps
         });
         
-        // We'll handle route display in a different way
-        // since we're using the MapComponent
+        // Store route coordinates for map display
+        setRouteCoordinates(route.geometry.coordinates);
       }
     } catch (error) {
       console.error('Error getting directions:', error);
@@ -112,6 +122,17 @@ const EmergencyDetail = () => {
       .unwrap()
       .then(() => {
         setResponding(false);
+        // Automatically show directions when user responds
+        setShowDirections(true);
+        // Enable real-time tracking
+        setEnableRealTimeTracking(true);
+        
+        // If we already have route coordinates, no need to fetch again
+        if (!routeCoordinates && currentLocation) {
+          const emergencyCoords = currentEmergency.location.coordinates;
+          const [userLng, userLat] = currentLocation || defaultUserLocation;
+          getDirections(userLng, userLat, emergencyCoords[0], emergencyCoords[1]);
+        }
       })
       .catch(err => {
         console.error('Error responding to emergency:', err);
@@ -154,6 +175,29 @@ const EmergencyDetail = () => {
     return responder ? responder.status : null;
   };
   
+  // Handle real-time location updates
+  const handleLocationUpdate = (location) => {
+    setRealTimeLocation(location);
+    
+    // If we're showing directions and have an emergency, check if we need to recalculate the route
+    if (showDirections && currentEmergency && routeCoordinates) {
+      // In a real implementation, you might want to check the distance from the route
+      // and only recalculate if the user has deviated significantly
+      
+      // For now, we'll just update the user's location and let the MapComponent handle the rest
+      const emergencyCoords = currentEmergency.location.coordinates;
+      
+      // Recalculate route every 30 seconds or when user deviates significantly
+      // This is a simplified implementation - in a real app, you'd want more sophisticated logic
+      const lastRouteUpdate = localStorage.getItem('lastRouteUpdate');
+      const now = Date.now();
+      
+      if (!lastRouteUpdate || (now - parseInt(lastRouteUpdate)) > 30000) {
+        getDirections(location.longitude, location.latitude, emergencyCoords[0], emergencyCoords[1]);
+        localStorage.setItem('lastRouteUpdate', now.toString());
+      }
+    }
+  };
   
   // Get emergency status color
   const getStatusColor = (status) => {
@@ -231,6 +275,11 @@ const EmergencyDetail = () => {
                 height="400px"
                 width="100%"
                 markers={mapMarkers}
+                routeCoordinates={routeCoordinates}
+                showDirections={showDirections || isResponder()}
+                enableRealTimeTracking={enableRealTimeTracking || isResponder()}
+                userLocation={realTimeLocation}
+                onLocationChange={handleLocationUpdate}
                 ref={mapRef}
               />
             )}

@@ -150,6 +150,39 @@ export const initializeSocket = () => {
     // Listen for responder updates
     socket.on(SOCKET_EVENTS.RESPONDER_UPDATED, (data) => {
       console.log("[SOCKET] Responder updated:", data);
+      
+      // Get current state
+      const state = store.getState();
+      const currentEmergency = state.emergency.currentEmergency;
+      
+      // If this is the emergency we're currently viewing, update it
+      if (currentEmergency && currentEmergency._id === data.emergencyId) {
+        // Fetch the updated emergency details to get the full responder information
+        store.dispatch(updateEmergencyInRealtime({
+          _id: data.emergencyId,
+          responderUpdated: true,
+          responder: data.responder
+        }));
+      }
+    });
+    
+    // Listen for responder added
+    socket.on(SOCKET_EVENTS.RESPONDER_ADDED, (data) => {
+      console.log("[SOCKET] Responder added:", data);
+      
+      // Get current state
+      const state = store.getState();
+      const currentEmergency = state.emergency.currentEmergency;
+      
+      // If this is the emergency we're currently viewing, update it
+      if (currentEmergency && currentEmergency._id === data.emergencyId) {
+        // Fetch the updated emergency details to get the full responder information
+        store.dispatch(updateEmergencyInRealtime({
+          _id: data.emergencyId,
+          responderAdded: true,
+          responder: data.responder
+        }));
+      }
     });
 
     return socket;
