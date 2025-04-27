@@ -74,7 +74,7 @@ npm run dev
 ## 🖋️ Screenshots
 
 ### 1. Report Emergency
-![Report Emergency](![image](https://github.com/user-attachments/assets/7963066a-c682-4c2b-8b6e-88ccbb58ccf7)
+![Report Emergency]([image](https://github.com/user-attachments/assets/7963066a-c682-4c2b-8b6e-88ccbb58ccf7)
 )
 
 
