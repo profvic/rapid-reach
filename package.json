@@ -5,6 +5,7 @@
   "main": "backend/src/server.js",
   "scripts": {
     "start": "node backend/src/server.js",
+    "dev": "nodemon backend/src/server.js",
     "build": "echo \"No build step needed\" && exit 0",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,5 +17,8 @@
     "mongoose": "^6.9.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
   }
 }
