@@ -1,14 +1,15 @@
 {
   "name": "rapid-reach",
   "version": "1.0.0",
-  "description": "Rapid Reach emergency response application",
+  "description": "Rapid Reach Application",
   "main": "backend/src/server.js",
-  "engines": {
-    "node": ">=14.0.0"
-  },
   "scripts": {
     "start": "node backend/src/server.js",
-    "build": "echo 'Build step complete'"
+    "build": "echo \"No build step needed\" && exit 0",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   },
   "dependencies": {
     "express": "^4.18.2",
