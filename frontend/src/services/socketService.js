@@ -36,6 +36,10 @@ const SOCKET_EVENTS = {
 
   // Notification events
   NEW_NOTIFICATION: "new_notification",
+  
+  // Voice Assistant events
+  VOICE_ASSISTANT_AUDIO: "voice_assistant_audio",
+  VOICE_ASSISTANT_RESULT: "voice_assistant_result",
 };
 
 // Initialize socket connection
@@ -43,74 +47,116 @@ export const initializeSocket = () => {
   const token = localStorage.getItem("token");
 
   if (!token) {
-    console.warn("Cannot initialize socket: No authentication token found");
-    return;
+    console.warn("[SOCKET] Cannot initialize socket: No authentication token found");
+    return null;
   }
+
+  console.log("[SOCKET] Initializing socket connection...");
 
   // Close existing connection if exists
   if (socket) {
+    console.log("[SOCKET] Closing existing connection");
     socket.disconnect();
   }
 
-  // Create new connection
-  socket = io("http://localhost:3000", {
-    auth: {
-      token,
-    },
-  });
+  try {
+    // Create new connection
+    socket = io("http://localhost:3000", {
+      auth: {
+        token,
+      },
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 10000,
+    });
 
-  // Connection events
-  socket.on(SOCKET_EVENTS.CONNECT, () => {
-    console.log("Socket connected", socket.id);
-  });
+    // Connection events
+    socket.on(SOCKET_EVENTS.CONNECT, () => {
+      console.log("[SOCKET] Connected successfully with ID:", socket.id);
+    });
 
-  socket.on(SOCKET_EVENTS.DISCONNECT, () => {
-    console.log("Socket disconnected");
-  });
+    socket.on(SOCKET_EVENTS.DISCONNECT, (reason) => {
+      console.log("[SOCKET] Disconnected. Reason:", reason);
+    });
 
-  socket.on("connect_error", (error) => {
-    console.error("Socket connection error:", error);
-  });
+    socket.on("connect_error", (error) => {
+      console.error("[SOCKET] Connection error:", error.message);
+    });
 
-  // Listen for new emergencies
-  socket.on(SOCKET_EVENTS.NEW_EMERGENCY, (data) => {
-    console.log("New emergency received:", data);
+    socket.on("reconnect_attempt", (attemptNumber) => {
+      console.log("[SOCKET] Reconnection attempt:", attemptNumber);
+    });
 
-    // Add notification
-    store.dispatch(
-      addNotification({
-        _id: Date.now().toString(), // Temporary ID
-        type: "emergency_alert",
-        title: `${data.emergency.emergencyType.toUpperCase()} EMERGENCY NEARBY`,
-        message: data.emergency.description,
-        status: "sent",
-        createdAt: new Date().toISOString(),
-        emergencyId: data.emergency._id,
-      })
-    );
-  });
+    socket.on("reconnect", (attemptNumber) => {
+      console.log("[SOCKET] Reconnected after", attemptNumber, "attempts");
+    });
 
-  // Listen for emergency updates
-  socket.on(SOCKET_EVENTS.EMERGENCY_STATUS_UPDATED, (data) => {
-    console.log("Emergency status updated:", data);
+    socket.on("reconnect_error", (error) => {
+      console.error("[SOCKET] Reconnection error:", error.message);
+    });
 
-    // Update emergency in store
-    store.dispatch(
-      updateEmergencyInRealtime({
-        _id: data.emergencyId,
-        status: data.status,
-      })
-    );
-  });
+    socket.on("reconnect_failed", () => {
+      console.error("[SOCKET] Failed to reconnect after maximum attempts");
+    });
 
-  // Listen for responder updates
-  socket.on(SOCKET_EVENTS.RESPONDER_UPDATED, (data) => {
-    console.log("Responder updated:", data);
+    socket.on("error", (error) => {
+      console.error("[SOCKET] General error:", error);
+    });
 
-    // Update emergency in store if needed
-  });
+    // Add a timeout to check if connection was successful
+    const connectionTimeout = setTimeout(() => {
+      if (!socket.connected) {
+        console.error("[SOCKET] Connection timeout - socket not connected after 5 seconds");
+      }
+    }, 5000);
 
-  return socket;
+    // Clear timeout when connected
+    socket.on(SOCKET_EVENTS.CONNECT, () => {
+      clearTimeout(connectionTimeout);
+    });
+    
+    // Listen for new emergencies
+    socket.on(SOCKET_EVENTS.NEW_EMERGENCY, (data) => {
+      console.log("[SOCKET] New emergency received:", data);
+
+      // Add notification
+      store.dispatch(
+        addNotification({
+          _id: Date.now().toString(), // Temporary ID
+          type: "emergency_alert",
+          title: `${data.emergency.emergencyType.toUpperCase()} EMERGENCY NEARBY`,
+          message: data.emergency.description,
+          status: "sent",
+          createdAt: new Date().toISOString(),
+          emergencyId: data.emergency._id,
+        })
+      );
+    });
+
+    // Listen for emergency updates
+    socket.on(SOCKET_EVENTS.EMERGENCY_STATUS_UPDATED, (data) => {
+      console.log("[SOCKET] Emergency status updated:", data);
+
+      // Update emergency in store
+      store.dispatch(
+        updateEmergencyInRealtime({
+          _id: data.emergencyId,
+          status: data.status,
+        })
+      );
+    });
+
+    // Listen for responder updates
+    socket.on(SOCKET_EVENTS.RESPONDER_UPDATED, (data) => {
+      console.log("[SOCKET] Responder updated:", data);
+    });
+
+    return socket;
+  } catch (error) {
+    console.error("[SOCKET] Error creating socket:", error);
+    return null;
+  }
 };
 
 // Disconnect socket
@@ -118,7 +164,7 @@ export const disconnectSocket = () => {
   if (socket) {
     socket.disconnect();
     socket = null;
-    console.log("Socket disconnected manually");
+    console.log("[SOCKET] Socket disconnected manually");
   }
 };
 
@@ -155,4 +201,118 @@ export const updateResponseStatus = (emergencyId, status) => {
   if (socket && socket.connected) {
     socket.emit(SOCKET_EVENTS.UPDATE_RESPONSE_STATUS, { emergencyId, status });
   }
+};
+
+// Send voice assistant audio
+export const sendVoiceAssistantAudio = (audioBlob, location) => {
+  console.log("[SOCKET] Preparing to send audio data...");
+  
+  if (!socket) {
+    console.error("[SOCKET] Cannot send audio: Socket not initialized");
+    return false;
+  }
+  
+  if (!socket.connected) {
+    console.error("[SOCKET] Cannot send audio: Socket not connected");
+    return false;
+  }
+  
+  try {
+    // Convert blob to base64 for transmission
+    const reader = new FileReader();
+    reader.readAsDataURL(audioBlob);
+    
+    reader.onloadend = () => {
+      try {
+        console.log("[SOCKET] Audio converted to base64, size:", Math.round(reader.result.length / 1024), "KB");
+        const base64data = reader.result.split(',')[1];
+        
+        // For debugging, create a mock response if server is not available
+        if (window.location.hostname === 'localhost' && !socket.connected) {
+          console.log("[SOCKET] DEV MODE: Creating mock response");
+          setTimeout(() => {
+            if (window.socket) {
+              window.socket.emit('voice_assistant_result', {
+                success: true,
+                text: "This is a mock response for testing. Fire emergency detected at your location.",
+                emergencyId: "mock-emergency-123",
+                message: "Fire emergency detected"
+              });
+            }
+          }, 2000);
+          return true;
+        }
+        
+        console.log("[SOCKET] Emitting audio data to server...");
+        socket.emit(SOCKET_EVENTS.VOICE_ASSISTANT_AUDIO, {
+          audio: base64data,
+          location
+        });
+        
+        console.log("[SOCKET] Audio data sent successfully");
+        return true;
+      } catch (error) {
+        console.error("[SOCKET] Error sending audio data:", error);
+        return false;
+      }
+    };
+    
+    reader.onerror = (error) => {
+      console.error("[SOCKET] Error reading audio file:", error);
+      return false;
+    };
+    
+    return true;
+  } catch (error) {
+    console.error("[SOCKET] Error in sendVoiceAssistantAudio:", error);
+    return false;
+  }
+};
+
+// Create a mock socket for testing
+export const createMockSocket = () => {
+  console.log("[SOCKET] Creating mock socket for testing");
+  
+  const mockSocket = {
+    id: "mock-socket-id",
+    connected: true,
+    on: (event, callback) => {
+      console.log("[MOCK SOCKET] Added listener for event:", event);
+      if (event === 'voice_assistant_result') {
+        // Store the callback to call it later
+        mockSocket._callbacks = mockSocket._callbacks || {};
+        mockSocket._callbacks[event] = callback;
+      }
+    },
+    off: (event) => {
+      console.log("[MOCK SOCKET] Removed listener for event:", event);
+      if (mockSocket._callbacks && mockSocket._callbacks[event]) {
+        delete mockSocket._callbacks[event];
+      }
+    },
+    emit: (event) => {
+      console.log("[MOCK SOCKET] Emitted event:", event);
+      
+      // If this is a voice assistant audio event, create a mock response
+      if (event === SOCKET_EVENTS.VOICE_ASSISTANT_AUDIO) {
+        setTimeout(() => {
+          if (mockSocket._callbacks && mockSocket._callbacks['voice_assistant_result']) {
+            console.log("[MOCK SOCKET] Creating mock response");
+            mockSocket._callbacks['voice_assistant_result']({
+              success: true,
+              text: "This is a mock response for testing. Fire emergency detected at your location.",
+              emergencyId: "mock-emergency-123",
+              message: "Fire emergency detected"
+            });
+          }
+        }, 2000);
+      }
+    },
+    disconnect: () => {
+      console.log("[MOCK SOCKET] Disconnected");
+      mockSocket.connected = false;
+    }
+  };
+  
+  return mockSocket;
 };

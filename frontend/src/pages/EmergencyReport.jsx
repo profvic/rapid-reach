@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertTriangle } from 'lucide-react';
 import { createEmergency } from '../redux/slices/emergencySlice';
 import MapComponent from '../components/MapComponent';
+import AudioAssistantBot from '../components/AudioAssistantBot';
 import mapboxgl from 'mapbox-gl';
 
 // Set your Mapbox access token
@@ -120,6 +121,7 @@ const EmergencyReport = () => {
       });
   };
   
+  
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Report Emergency</h2>
@@ -228,6 +230,9 @@ const EmergencyReport = () => {
           </div>
         </div>
       </div>
+      
+      {/* AI Assistant Bot */}
+      <AudioAssistantBot />
     </div>
   );
 };

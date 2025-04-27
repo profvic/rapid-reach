@@ -27,4 +27,8 @@ module.exports = {
 
   // Notification events
   NEW_NOTIFICATION: "new_notification",
+  
+  // Voice Assistant events
+  VOICE_ASSISTANT_AUDIO: "voice_assistant_audio",
+  VOICE_ASSISTANT_RESULT: "voice_assistant_result",
 };

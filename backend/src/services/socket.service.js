@@ -2,6 +2,7 @@ const socketIO = require("socket.io");
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
 const User = require("../models/user.model");
+const Emergency = require("../models/emergency.model");
 const SOCKET_EVENTS = require("../constants/socket.events");
 
 let io;
@@ -141,6 +142,77 @@ exports.initialize = (server) => {
       console.log(`User ${socket.user.name} left emergency ${emergencyId}`);
     });
 
+    // Handle voice assistant audio
+    socket.on(SOCKET_EVENTS.VOICE_ASSISTANT_AUDIO, async (data) => {
+      try {
+        const { audio, location } = data;
+        
+        if (!audio || !location) {
+          return;
+        }
+        
+        console.log(`Received voice audio from user: ${socket.user.name}`);
+        
+        // In a real implementation, you would send the audio to a speech-to-text service
+        // For this example, we'll simulate processing with a timeout and predefined responses
+        
+        setTimeout(async () => {
+          try {
+            // Simulate speech-to-text processing
+            const simulatedText = processAudioToText(audio);
+            
+            // Extract emergency type from text
+            const emergencyInfo = extractEmergencyInfo(simulatedText);
+            
+            if (emergencyInfo.emergencyType) {
+              // Create emergency report
+              const emergency = new Emergency({
+                createdBy: socket.user._id,
+                emergencyType: emergencyInfo.emergencyType,
+                description: simulatedText,
+                location: {
+                  coordinates: [parseFloat(location.longitude), parseFloat(location.latitude)],
+                  address: location.address || "Unknown location",
+                },
+                status: "active",
+              });
+              
+              await emergency.save();
+              
+              // Emit result back to user
+              socket.emit(SOCKET_EVENTS.VOICE_ASSISTANT_RESULT, {
+                success: true,
+                emergencyId: emergency._id,
+                message: `Emergency report created: ${emergencyInfo.emergencyType}`,
+                text: simulatedText
+              });
+              
+              // Find and notify nearby users (similar to createEmergency controller)
+              // This would be implemented in a real application
+              
+            } else {
+              // No emergency type detected
+              socket.emit(SOCKET_EVENTS.VOICE_ASSISTANT_RESULT, {
+                success: false,
+                message: "Could not determine emergency type from audio",
+                text: simulatedText
+              });
+            }
+          } catch (error) {
+            console.error("Error processing voice assistant audio:", error);
+            socket.emit(SOCKET_EVENTS.VOICE_ASSISTANT_RESULT, {
+              success: false,
+              message: "Error processing audio",
+              error: error.message
+            });
+          }
+        }, 2000); // Simulate processing delay
+        
+      } catch (error) {
+        console.error("Error handling voice assistant audio:", error);
+      }
+    });
+    
     // Handle disconnection
     socket.on("disconnect", async () => {
       console.log(`User disconnected: ${socket.user.name} (${socket.id})`);
@@ -183,3 +255,45 @@ exports.emitToAll = (event, data) => {
 exports.getIO = () => {
   return io;
 };
+
+// Helper function to simulate processing audio to text
+function processAudioToText(audioBase64) {
+  // In a real implementation, this would call a speech-to-text API
+  // For this example, we'll return a simulated response
+  
+  // Generate a random emergency scenario
+  const scenarios = [
+    "There's a fire in the building on the third floor. People are evacuating but some might be trapped.",
+    "Medical emergency, someone collapsed in the lobby and needs immediate assistance. They're not responding.",
+    "Security issue, there's an unauthorized person trying to access the restricted area.",
+    "There's flooding in the basement due to a burst pipe. Water is rising quickly.",
+    "Car accident at the intersection, multiple vehicles involved. People appear to be injured."
+  ];
+  
+  return scenarios[Math.floor(Math.random() * scenarios.length)];
+}
+
+// Helper function to extract emergency type from text
+function extractEmergencyInfo(text) {
+  const emergencyTypes = {
+    fire: ["fire", "burning", "smoke", "flames"],
+    medical: ["medical", "collapsed", "injured", "heart attack", "breathing", "unconscious"],
+    security: ["security", "threat", "suspicious", "unauthorized", "break-in"],
+    natural_disaster: ["flood", "earthquake", "storm", "hurricane", "tornado", "tsunami"],
+    other: ["accident", "emergency", "help", "danger"]
+  };
+  
+  text = text.toLowerCase();
+  
+  // Check for each emergency type
+  for (const [type, keywords] of Object.entries(emergencyTypes)) {
+    for (const keyword of keywords) {
+      if (text.includes(keyword)) {
+        return { emergencyType: type };
+      }
+    }
+  }
+  
+  // Default to "other" if no specific type is detected
+  return { emergencyType: "other" };
+}

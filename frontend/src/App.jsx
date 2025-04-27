@@ -27,13 +27,17 @@ function App() {
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(getCurrentUser());
-      initializeSocket();
+      // Initialize socket and make it available globally
+      const socket = initializeSocket();
+      window.socket = socket;
     } else {
       disconnectSocket();
+      window.socket = null;
     }
     
     return () => {
       disconnectSocket();
+      window.socket = null;
     };
   }, [isAuthenticated, dispatch]);
 
