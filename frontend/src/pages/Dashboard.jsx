@@ -2,8 +2,9 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, Navigation, Clock, Eye } from 'lucide-react';
+import { AlertCircle, Navigation, Clock, Eye, MapPin } from 'lucide-react';
 import { getNearbyEmergencies } from '../redux/slices/emergencySlice';
+import { setCurrentLocation, updateUserLocation } from '../redux/slices/userSlice';
 import MapComponent from '../components/MapComponent';
 
 const Dashboard = () => {
@@ -12,6 +13,8 @@ const Dashboard = () => {
   
   const { emergencies, loading, error } = useSelector(state => state.emergency);
   const { currentLocation } = useSelector(state => state.user);
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState(null);
   
   const [mapMarkers, setMapMarkers] = useState([]);
   
@@ -91,10 +94,70 @@ const Dashboard = () => {
     return `${diffInDays}d ago`;
   };
   
+  // Handle locate me button click
+  const handleLocateMe = () => {
+    setIsLocating(true);
+    setLocationError(null);
+    
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude, accuracy } = position.coords;
+          console.log(`Location obtained with accuracy: ${accuracy} meters`);
+          
+          // Update Redux store with new location
+          // Note: Mapbox uses [longitude, latitude] format
+          dispatch(setCurrentLocation([longitude, latitude]));
+          
+          // Also update location on server
+          dispatch(updateUserLocation({ longitude, latitude }))
+            .unwrap()
+            .then(() => {
+              console.log("Location successfully updated on server");
+            })
+            .catch(err => {
+              console.error("Failed to update location on server:", err);
+            });
+          
+          setIsLocating(false);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          let errorMessage = "Could not get your location. ";
+          
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage += "Location permission denied.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage += "Location information is unavailable.";
+              break;
+            case error.TIMEOUT:
+              errorMessage += "Location request timed out.";
+              break;
+            default:
+              errorMessage += "Unknown error occurred.";
+          }
+          
+          setLocationError(errorMessage);
+          setIsLocating(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0 // Always get a fresh position
+        }
+      );
+    } else {
+      setLocationError("Geolocation is not supported by this browser.");
+      setIsLocating(false);
+    }
+  };
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-2">
-        <div className="bg-card rounded-lg shadow-md overflow-hidden h-[500px]">
+        <div className="bg-card rounded-lg shadow-md overflow-hidden h-[500px] relative">
           <MapComponent
             initialCenter={initialCenter}
             initialZoom={13}
@@ -103,6 +166,32 @@ const Dashboard = () => {
             markerColor="#0074D9"
             markers={mapMarkers}
           />
+          
+          {/* Locate Me Button */}
+          <div className="absolute bottom-4 right-4 z-10 flex flex-col items-end">
+            {locationError && (
+              <div className="bg-destructive text-destructive-foreground px-3 py-2 rounded-md mb-2 text-sm max-w-xs">
+                {locationError}
+              </div>
+            )}
+            <button
+              onClick={handleLocateMe}
+              disabled={isLocating}
+              className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md shadow-md transition-colors"
+            >
+              {isLocating ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
+                  <span>Locating...</span>
+                </>
+              ) : (
+                <>
+                  <MapPin size={16} />
+                  <span>Locate Me</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
       

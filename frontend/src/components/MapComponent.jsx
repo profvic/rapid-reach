@@ -22,6 +22,16 @@ const MapComponent = ({
     longitude: Array.isArray(initialCenter) ? initialCenter[0] : initialCenter.longitude
   });
 
+  // Update location when initialCenter prop changes
+  useEffect(() => {
+    if (initialCenter) {
+      setLocation({
+        latitude: Array.isArray(initialCenter) ? initialCenter[1] : initialCenter.latitude,
+        longitude: Array.isArray(initialCenter) ? initialCenter[0] : initialCenter.longitude
+      });
+    }
+  }, [initialCenter]);
+
   // Initialize map
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -148,9 +158,10 @@ const MapComponent = ({
       mapInstance.current.flyTo({
         center: [location.longitude, location.latitude],
         zoom: initialZoom,
+        essential: true // This animation is considered essential for the user experience
       });
     }
-  }, [location]);
+  }, [location, initialZoom]);
 
   // Update markers when markers prop changes
   useEffect(() => {
@@ -211,7 +222,9 @@ const MapComponent = ({
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const { latitude, longitude } = position.coords;
+          const { latitude, longitude, accuracy } = position.coords;
+          console.log(`Location obtained with accuracy: ${accuracy} meters`);
+          
           const newLocation = { latitude, longitude };
           setLocation(newLocation);
           
@@ -219,12 +232,25 @@ const MapComponent = ({
           if (onLocationChange) {
             onLocationChange(newLocation);
           }
+          
+          // Fly to the new location
+          if (mapInstance.current) {
+            mapInstance.current.flyTo({
+              center: [longitude, latitude],
+              zoom: initialZoom,
+              essential: true
+            });
+          }
         },
         (error) => {
           console.error("Error getting location:", error);
-          alert("Could not get your location. Please try again.");
+          alert(`Could not get your location: ${error.message}. Please try again.`);
         },
-        { enableHighAccuracy: true }
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0 // Always get a fresh position
+        }
       );
     } else {
       alert("Geolocation is not supported by this browser.");
