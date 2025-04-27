@@ -106,6 +106,7 @@ const Dashboard = () => {
             width="100%"
             markerColor="#0074D9"
             markers={mapMarkers}
+            showSOSButton={true} // Explicitly enable SOS button on dashboard
           />
         </div>
       </div>

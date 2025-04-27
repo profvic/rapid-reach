@@ -118,11 +118,18 @@ const NotificationDropdown = () => {
                     key={notification._id}
                     onClick={() => handleNotificationClick(notification)}
                     className={`p-3 border-b border-border cursor-pointer hover:bg-muted transition-colors ${
-                      notification.status !== 'read' ? 'bg-primary/5' : ''
+                      notification.type === 'sos_alert'
+                        ? 'bg-destructive/10 border-l-4 border-l-destructive'
+                        : notification.status !== 'read'
+                          ? 'bg-primary/5'
+                          : ''
                     }`}
                   >
-                    <div className="font-medium text-sm">{notification.title}</div>
-                    <div className="text-sm text-muted-foreground mt-1">
+                    <div className={`font-medium text-sm ${notification.type === 'sos_alert' ? 'text-destructive' : ''}`}>
+                      {notification.type === 'sos_alert' && '🆘 '}
+                      {notification.title}
+                    </div>
+                    <div className={`text-sm mt-1 ${notification.type === 'sos_alert' ? 'text-destructive/90 font-medium' : 'text-muted-foreground'}`}>
                       {notification.message}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">

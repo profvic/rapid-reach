@@ -280,6 +280,7 @@ const EmergencyDetail = () => {
                 enableRealTimeTracking={enableRealTimeTracking || isResponder()}
                 userLocation={realTimeLocation}
                 onLocationChange={handleLocationUpdate}
+                showSOSButton={true} // Explicitly enable SOS button on emergency detail page
                 ref={mapRef}
               />
             )}

@@ -16,6 +16,10 @@ module.exports = {
   EMERGENCY_CREATED: "emergency_created",
   EMERGENCY_STATUS_UPDATED: "emergency_status_updated",
   EMERGENCY_RESOLVED: "emergency_resolved",
+  
+  // SOS events
+  SEND_SOS_ALERT: "send_sos_alert",
+  SOS_ALERT_RECEIVED: "sos_alert_received",
 
   // Response events
   JOIN_EMERGENCY: "join_emergency",

@@ -143,6 +143,7 @@ const EmergencyReport = () => {
               markerColor="#FF4136"
               draggableMarker={true}
               onLocationChange={handleLocationChange}
+              showSOSButton={false} // Hide SOS button on emergency report page
             />
             {formData.address && (
               <div className="p-3 bg-muted/50 text-sm">

@@ -25,6 +25,10 @@ const SOCKET_EVENTS = {
   EMERGENCY_CREATED: "emergency_created",
   EMERGENCY_STATUS_UPDATED: "emergency_status_updated",
   EMERGENCY_RESOLVED: "emergency_resolved",
+  
+  // SOS events
+  SEND_SOS_ALERT: "send_sos_alert",
+  SOS_ALERT_RECEIVED: "sos_alert_received",
 
   // Response events
   JOIN_EMERGENCY: "join_emergency",
@@ -132,6 +136,56 @@ export const initializeSocket = () => {
           emergencyId: data.emergency._id,
         })
       );
+    });
+    
+    // Listen for SOS alerts
+    socket.on(SOCKET_EVENTS.SOS_ALERT_RECEIVED, (data) => {
+      console.log("[SOCKET] SOS alert received:", data);
+
+      // Add notification with high priority
+      store.dispatch(
+        addNotification({
+          _id: Date.now().toString(), // Temporary ID
+          type: "sos_alert",
+          title: "URGENT SOS ALERT",
+          message: `${data.emergency.createdBy.name} has sent an SOS alert and needs immediate assistance!`,
+          status: "sent",
+          priority: "high",
+          createdAt: new Date().toISOString(),
+          emergencyId: data.emergency._id,
+        })
+      );
+      
+      // Play alert sound
+      try {
+        const alertSound = new Audio('/alert-sound.mp3');
+        alertSound.volume = 1.0;
+        
+        // Add error handling for the case where the sound file doesn't exist
+        alertSound.addEventListener('error', (e) => {
+          console.warn("[SOCKET] Alert sound file not found or cannot be played:", e);
+          // Fallback to browser's native alert if sound can't be played
+          if (window.Notification && Notification.permission === "granted") {
+            new Notification("URGENT SOS ALERT", {
+              body: `${data.emergency.createdBy.name} has sent an SOS alert and needs immediate assistance!`,
+              icon: "/vite.svg" // Use any available icon as fallback
+            });
+          }
+        });
+        
+        alertSound.play().catch(e => {
+          console.error("[SOCKET] Error playing alert sound:", e);
+          // Fallback to browser notification
+          if (window.Notification && Notification.permission === "granted") {
+            new Notification("URGENT SOS ALERT", {
+              body: `${data.emergency.createdBy.name} has sent an SOS alert and needs immediate assistance!`,
+              icon: "/vite.svg" // Use any available icon as fallback
+            });
+          }
+        });
+      } catch (error) {
+        console.error("[SOCKET] Error setting up alert sound:", error);
+      }
     });
 
     // Listen for emergency updates
@@ -348,4 +402,32 @@ export const createMockSocket = () => {
   };
   
   return mockSocket;
+};
+
+// Send SOS alert
+export const sendSOSAlert = (location) => {
+  console.log("[SOCKET] Sending SOS alert with location:", location);
+  
+  if (!socket) {
+    console.error("[SOCKET] Cannot send SOS alert: Socket not initialized");
+    return false;
+  }
+  
+  if (!socket.connected) {
+    console.error("[SOCKET] Cannot send SOS alert: Socket not connected");
+    return false;
+  }
+  
+  try {
+    socket.emit(SOCKET_EVENTS.SEND_SOS_ALERT, {
+      location,
+      timestamp: new Date().toISOString()
+    });
+    
+    console.log("[SOCKET] SOS alert sent successfully");
+    return true;
+  } catch (error) {
+    console.error("[SOCKET] Error sending SOS alert:", error);
+    return false;
+  }
 };
