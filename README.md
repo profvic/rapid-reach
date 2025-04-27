@@ -73,25 +73,32 @@ npm run dev
 
 ## 🖋️ Screenshots
 
-### 1. Report Emergency
-![Report Emergency](https://github.com/pruthvik-sheth/rapid-reach/blob/main/Images/Dashboard.png?raw=true)
+### 1. Login
+![Login](https://github.com/pruthvik-sheth/rapid-reach/blob/main/Images/Login.png?raw=true)
 )
 
 
-### 2. Profile Management
-![Profile Page](./images/profile_page.png)
+### 2. Register
+![Register](https://github.com/pruthvik-sheth/rapid-reach/blob/main/Images/Register.png?raw=true)
 
-### 3. Emergency Details
-![Emergency Detail](./images/emergency_detail.png)
+### 3. Dashboard - Nearby Emergencies
+![Dashboard](https://github.com/pruthvik-sheth/rapid-reach/blob/main/Images/Dashboard.png?raw=true)
 
-### 4. SOS Alert Sent
-![SOS Alert Sent](./images/sos_alert_sent.png)
+### 4. Emergency Details
+![Emergency Detail](https://github.com/pruthvik-sheth/rapid-reach/blob/main/Images/Emergency%20Details.png?raw=true)
 
-### 5. Voice Assistant Activated
-![Voice Assistant](./images/voice_assistant.png)
+### 5. Report Emergency
+![Report Emergency](https://github.com/pruthvik-sheth/rapid-reach/blob/main/Images/Report%20Emergency.png?raw=true)
 
-### 6. Dashboard - Nearby Emergencies
-![Dashboard](./images/dashboard_view.png)
+### 6. SOS Alert Sent
+![SOS Alert Sent](https://github.com/pruthvik-sheth/rapid-reach/blob/main/Images/SOS%20Alert.png?raw=true)
+
+### 7. Voice Assistant Activated
+![Voice Assistant](https://github.com/pruthvik-sheth/rapid-reach/blob/main/Images/Voice%20Assistant.png?raw=true)
+
+### 8. Profile
+![Profile](https://github.com/pruthvik-sheth/rapid-reach/blob/main/Images/Profile.png?raw=true)
+
 
 ---
 
