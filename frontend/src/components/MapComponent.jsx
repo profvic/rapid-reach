@@ -43,7 +43,13 @@ const MapComponent = ({
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+    //mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+      const token = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+      if (!token) {
+        console.error("❌ Mapbox token missing. Please add VITE_MAPBOX_ACCESS_TOKEN to your .env");
+      return; // stop here to avoid crashing
+      }
+      mapboxgl.accessToken = token;
 
     const map = new mapboxgl.Map({
       container: mapContainer.current,
