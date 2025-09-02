@@ -6,7 +6,7 @@ const API_URL =
   import.meta.env.VITE_API_URL ||
   (import.meta.env.MODE === "development"
     ? "http://localhost:3000/api"
-    : "https://rapid-reach-gamv.onrender.com//api");
+    : "https://rapid-reach-gamv.onrender.com/api"); // ✅ single slash
 
 // --- Async actions ---
 export const registerUser = createAsyncThunk(
