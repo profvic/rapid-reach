@@ -2,8 +2,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_URL = "http://localhost:3000/api";
-
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.MODE === "development"
+    ? "http://localhost:3000/api"
+    : "https://rapid-reach-gamv.onrender.com/api"); // ✅ single slash
 // Helper to set auth header
 const getAuthHeader = () => {
   const token = localStorage.getItem("token");

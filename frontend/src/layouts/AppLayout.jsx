@@ -68,7 +68,10 @@ const AppLayout = () => {
       <header className="border-b border-border bg-background">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center">
-            <h1 className="text-xl font-bold text-primary">RapidReach</h1>
+            <div className='bg-red-500 rounded-full p-2 mb-2 mr-3 flex items-center justify-center'>
+              <AlertTriangle className='w-6 h-6 text-white' />
+            </div>
+            <h1 className="text-xl font-bold text-primary">Fire Alert</h1>
           </div>
           
           <div className="flex items-center space-x-2 md:hidden">
@@ -84,8 +87,8 @@ const AppLayout = () => {
               className={({ isActive }) =>
                 `flex items-center px-3 py-2 rounded-md ${
                   isActive
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-foreground hover:bg-muted'
+                    ? 'bg-primary/10 text-primary font-medium text-red-600'
+                    : 'text-foreground hover:bg-red-100 hover:text-red-600'
                 }`
               }
             >
@@ -97,8 +100,8 @@ const AppLayout = () => {
               className={({ isActive }) =>
                 `flex items-center px-3 py-2 rounded-md ${
                   isActive
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-foreground hover:bg-muted'
+                    ? 'bg-primary/10 text-primary font-medium text-red-600'
+                    : 'text-foreground hover:bg-red-100 hover:text-red-600'
                 }`
               }
             >
@@ -110,8 +113,8 @@ const AppLayout = () => {
               className={({ isActive }) =>
                 `flex items-center px-3 py-2 rounded-md ${
                   isActive
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-foreground hover:bg-muted'
+                    ? 'bg-primary/10 text-primary font-medium text-red-600'
+                    : 'text-foreground hover:bg-red-100 hover:text-red-600'
                 }`
               }
             >
@@ -123,7 +126,7 @@ const AppLayout = () => {
 
             <button
               onClick={handleLogout}
-              className="flex items-center px-3 py-2 rounded-md text-foreground hover:bg-destructive/10 hover:text-destructive"
+              className="flex items-center px-3 py-2 rounded-md bg-red-500 text-white transition-colors"
             >
               <LogOut size={18} className="mr-2" />
               <span>Logout</span>
@@ -178,13 +181,15 @@ const AppLayout = () => {
               <User size={18} className="mr-2" />
               <span>Profile</span>
             </NavLink>
-            <button
-              onClick={handleLogout}
-              className="flex items-center px-3 py-2 rounded-md text-foreground hover:bg-destructive/10 hover:text-destructive"
-            >
-              <LogOut size={18} className="mr-2" />
-              <span>Logout</span>
-            </button>
+<button
+  onClick={handleLogout}
+  className="flex items-center px-3 py-2 rounded-md bg-red-500 text-white transition-colors"
+>
+  <LogOut size={18} className="mr-2" />
+  <span>Logout</span>
+</button>
+
+
           </nav>
         </div>
       )}
@@ -193,13 +198,64 @@ const AppLayout = () => {
       <main className="flex-1 container mx-auto px-4 py-6">
         <Outlet />
       </main>
+ {/* Mobile Bottom Navigation */}
+<div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-md md:hidden z-50">
+  <nav className="flex justify-around items-center py-2">
+    <NavLink
+      to="/"
+      className={({ isActive }) =>
+        `flex flex-col items-center text-xs ${
+          isActive ? 'text-red-600' : 'text-gray-500'
+        }`
+      }
+    >
+      <Home size={20} />
+      <span>Home</span>
+    </NavLink>
+
+    <NavLink
+      to="/report"
+      className={({ isActive }) =>
+        `flex flex-col items-center text-xs ${
+          isActive ? 'text-red-600' : 'text-gray-500'
+        }`
+      }
+    >
+      <AlertTriangle size={20} />
+      <span>Report</span>
+    </NavLink>
+
+    <NavLink
+      to="/profile"
+      className={({ isActive }) =>
+        `flex flex-col items-center text-xs ${
+          isActive ? 'text-red-600' : 'text-gray-500'
+        }`
+      }
+    >
+      <User size={20} />
+      <span>Profile</span>
+    </NavLink>
+
+    <button
+      onClick={handleLogout}
+      className="flex flex-col items-center text-xs text-gray-500"
+    >
+      <LogOut size={20} />
+      <span>Logout</span>
+    </button>
+  </nav>
+</div>
+
+
 
       {/* Footer */}
-      <footer className="border-t border-border bg-background py-4">
-        <div className="container mx-auto px-4 text-center text-muted-foreground text-sm">
-          &copy; {new Date().getFullYear()} RapidReach. All rights reserved.
-        </div>
-      </footer>
+      <footer className="border-t bg-red-600 py-4">
+  <div className="container mx-auto px-4 text-center text-white text-sm">
+    &copy; {new Date().getFullYear()} FireAlert. All rights reserved.
+  </div>
+</footer>
+
     </div>
   );
 };

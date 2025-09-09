@@ -12,10 +12,10 @@ import mapboxgl from 'mapbox-gl';
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 const EMERGENCY_TYPES = [
-  { id: 'fire', label: 'Fire', color: '#FF4136' },
-  { id: 'medical', label: 'Medical', color: '#2ECC40' },
-  { id: 'security', label: 'Security', color: '#0074D9' },
-  { id: 'natural_disaster', label: 'Natural Disaster', color: '#FF851B' },
+  { id: 'Wild_fire', label: 'Wild Fire', color: '#FF4136' },
+  { id: 'electrical_fire', label: 'Electrical Fire', color: '#2ECC40' },
+  { id: 'fuel_fire', label: 'Fuel Fire', color: '#0074D9' },
+  { id: 'domestic_fire', label: 'Domestic Fire', color: '#FF851B' },
   { id: 'other', label: 'Other', color: '#B10DC9' }
 ];
 

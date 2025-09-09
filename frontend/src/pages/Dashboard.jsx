@@ -6,6 +6,26 @@ import { AlertCircle, Navigation, Clock, Eye } from "lucide-react"
 import { getNearbyEmergencies } from "../redux/slices/emergencySlice"
 import MapComponent from "../components/MapComponent"
 
+import { Bar, Doughnut } from "react-chartjs-2"
+import {
+  Chart as ChartJS,
+  BarElement,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+} from "chart.js"
+
+ChartJS.register(
+  BarElement,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend
+)
+
 const Dashboard = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -16,6 +36,8 @@ const Dashboard = () => {
   const { currentLocation } = useSelector((state) => state.user)
 
   const [mapMarkers, setMapMarkers] = useState([])
+  const [typeStats, setTypeStats] = useState({})
+  const [reportStats, setReportStats] = useState({ reported: 0, responded: 0 })
 
   // Default to San Francisco if no location is available
   const defaultLocation = [-122.4194, 37.7749] // San Francisco coordinates
@@ -27,13 +49,12 @@ const Dashboard = () => {
       const [longitude, latitude] = currentLocation
       dispatch(getNearbyEmergencies({ longitude, latitude }))
     } else {
-      // Use default location if no current location
       const [longitude, latitude] = defaultLocation
       dispatch(getNearbyEmergencies({ longitude, latitude }))
     }
   }, [currentLocation, dispatch])
 
-  // Prepare emergency markers for the map
+  // Prepare emergency markers and stats
   useEffect(() => {
     if (emergencies.length > 0) {
       const markers = emergencies
@@ -46,12 +67,12 @@ const Dashboard = () => {
               latitude: lat,
               color: getEmergencyColor(emergency.emergencyType),
               popupContent: `
-              <h3 class="text-base font-bold">${emergency.emergencyType.toUpperCase()}</h3>
-              <p class="text-sm">${emergency.description}</p>
-              <p class="text-xs text-gray-500 mt-1">
-                ${new Date(emergency.createdAt).toLocaleTimeString()}
-              </p>
-            `,
+                <h3 class="text-base font-bold">${emergency.emergencyType.toUpperCase()}</h3>
+                <p class="text-sm">${emergency.description}</p>
+                <p class="text-xs text-gray-500 mt-1">
+                  ${new Date(emergency.createdAt).toLocaleTimeString()}
+                </p>
+              `,
               onClick: () => navigate(`/emergency/${emergency._id}`),
             }
           }
@@ -60,19 +81,36 @@ const Dashboard = () => {
         .filter(Boolean)
 
       setMapMarkers(markers)
+
+      // Stats by type
+      const countsByType = {}
+      let reported = 0
+      let responded = 0
+
+      emergencies.forEach((emergency) => {
+        const type = emergency.emergencyType.toLowerCase()
+        countsByType[type] = (countsByType[type] || 0) + 1
+        reported++
+        if (emergency.responders && emergency.responders.length > 0) {
+          responded++
+        }
+      })
+
+      setTypeStats(countsByType)
+      setReportStats({ reported, responded })
     }
   }, [emergencies, navigate])
 
   // Helper to get color based on emergency type
   const getEmergencyColor = (type) => {
     switch (type.toLowerCase()) {
-      case "fire":
+      case "wild_fire":
         return "#FF4136" // Red
-      case "medical":
+      case "electrical_fire":
         return "#2ECC40" // Green
-      case "security":
+      case "fuel_fire":
         return "#0074D9" // Blue
-      case "natural_disaster":
+      case "domestic_fire":
         return "#FF851B" // Orange
       default:
         return "#B10DC9" // Purple
@@ -97,6 +135,7 @@ const Dashboard = () => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Map */}
       <div className="md:col-span-2">
         <div className="bg-card rounded-lg shadow-md overflow-hidden h-[500px] relative">
           <MapComponent
@@ -106,11 +145,12 @@ const Dashboard = () => {
             width="100%"
             markerColor="#0074D9"
             markers={mapMarkers}
-            showSOSButton={true} // Explicitly enable SOS button on dashboard
+            showSOSButton={true}
           />
         </div>
       </div>
 
+      {/* Emergency List */}
       <div>
         <div className="bg-card rounded-lg shadow-md overflow-hidden">
           <div className="p-4 border-b border-border">
@@ -190,6 +230,68 @@ const Dashboard = () => {
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Charts */}
+      <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        {/* Bar Chart */}
+        <div className="bg-card rounded-lg shadow-md p-4">
+          <h2 className="text-lg font-semibold mb-4">Emergencies by Type</h2>
+          <Bar
+            data={{
+              labels: Object.keys(typeStats).map(
+                (key) => key.charAt(0).toUpperCase() + key.slice(1)
+              ),
+              datasets: [
+                {
+                  label: "# of Reports",
+                  data: Object.values(typeStats),
+                  backgroundColor: [
+                    "#FF4136", // Fire
+                    "#2ECC40", // Medical
+                    "#0074D9", // Security
+                    "#FF851B", // Natural disaster
+                    "#B10DC9", // Other
+                  ],
+                  borderRadius: 5,
+                },
+              ],
+            }}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  display: false,
+                },
+              },
+            }}
+          />
+        </div>
+
+        {/* Doughnut Chart */}
+        <div className="bg-card rounded-lg shadow-md p-4">
+          <h2 className="text-lg font-semibold mb-4">Reported vs Responded</h2>
+          <Doughnut
+            data={{
+              labels: ["Reported", "Responded"],
+              datasets: [
+                {
+                  label: "Count",
+                  data: [reportStats.reported, reportStats.responded],
+                  backgroundColor: ["#6366F1", "#10B981"],
+                },
+              ],
+            }}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                },
+              },
+            }}
+          />
         </div>
       </div>
     </div>

@@ -44,7 +44,7 @@ const Login = () => {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-red-300"
             required
           />
         </div>
@@ -59,7 +59,7 @@ const Login = () => {
             name="password"
             value={formData.password}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-red-300"
             required
           />
         </div>
@@ -67,7 +67,7 @@ const Login = () => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-primary text-primary-foreground py-2 rounded-md hover:bg-primary/90 transition-colors disabled:opacity-70"
+          className="w-full bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition-colors disabled:opacity-70"
         >
           {loading ? 'Logging in...' : 'Login'}
         </button>
@@ -75,8 +75,8 @@ const Login = () => {
       
       <div className="mt-4 text-center text-sm">
         <span className="text-muted-foreground">Don't have an account?</span>{' '}
-        <Link to="/register" className="text-primary hover:underline">
-          Register NOW
+        <Link to="/register" className="text-red-600 hover:underline">
+          Register
         </Link>
       </div>
     </div>
