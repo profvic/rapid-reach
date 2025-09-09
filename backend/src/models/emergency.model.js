@@ -11,7 +11,7 @@ const emergencySchema = new Schema(
     emergencyType: {
       type: String,
       required: true,
-      enum: ["fire", "medical", "security", "natural_disaster", "other"],
+      enum: ["wild_fire", "electrical_fire", "fuel_fire", "domestic_fire", "other"],
     },
     emergencySubtype: String,
     description: {
