@@ -235,39 +235,7 @@ const Dashboard = () => {
 
       {/* Charts */}
       <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        {/* Bar Chart */}
-        <div className="bg-card rounded-lg shadow-md p-4">
-          <h2 className="text-lg font-semibold mb-4">Emergencies by Type</h2>
-          <Bar
-            data={{
-              labels: Object.keys(typeStats).map(
-                (key) => key.charAt(0).toUpperCase() + key.slice(1)
-              ),
-              datasets: [
-                {
-                  label: "# of Reports",
-                  data: Object.values(typeStats),
-                  backgroundColor: [
-                    "#FF4136", // Fire
-                    "#2ECC40", // Medical
-                    "#0074D9", // Security
-                    "#FF851B", // Natural disaster
-                    "#B10DC9", // Other
-                  ],
-                  borderRadius: 5,
-                },
-              ],
-            }}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: {
-                  display: false,
-                },
-              },
-            }}
-          />
-        </div>
+        
 
         {/* Doughnut Chart */}
         <div className="bg-card rounded-lg shadow-md p-4">
