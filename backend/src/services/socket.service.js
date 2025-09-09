@@ -10,7 +10,10 @@ let io;
 exports.initialize = (server) => {
   io = socketIO(server, {
     cors: {
-      origin: "*", // In production, you'd restrict this to your frontend domain
+      origin: [
+      "http://localhost:5173", // local dev frontend
+      "https://your-frontend-service.onrender.com", // deployed frontend on Render
+    ], // In production, you'd restrict this to your frontend domain
       methods: ["GET", "POST"],
     },
   });

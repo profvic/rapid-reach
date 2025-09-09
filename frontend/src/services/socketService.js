@@ -65,15 +65,18 @@ export const initializeSocket = () => {
 
   try {
     // Create new connection
-    socket = io("http://localhost:3000", {
-      auth: {
-        token,
-      },
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      timeout: 10000,
-    });
+    const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
+
+socket = io(SOCKET_URL, {
+  auth: {
+    token,
+  },
+  reconnection: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
+  timeout: 10000,
+  transports: ["websocket"], // ensure Render proxy supports it
+});
 
     // Connection events
     socket.on(SOCKET_EVENTS.CONNECT, () => {
