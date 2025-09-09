@@ -23,7 +23,6 @@ const MapComponent = ({
   const [mainMarker, setMainMarker] = useState(null);
   const markersRef = useRef([]);
   const routeRef = useRef(null);
-  const userMarkerRef = useRef(null);
   const watchPositionId = useRef(null);
   const [isTracking, setIsTracking] = useState(false);
   const [location, setLocation] = useState({
@@ -31,6 +30,7 @@ const MapComponent = ({
     longitude: Array.isArray(initialCenter) ? initialCenter[0] : initialCenter.longitude
   });
 
+  // Update state if initialCenter changes
   useEffect(() => {
     if (initialCenter) {
       setLocation({
@@ -40,16 +40,16 @@ const MapComponent = ({
     }
   }, [initialCenter]);
 
+  // Initialize map
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    //mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
-      const token = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
-      if (!token) {
-        console.error("❌ Mapbox token missing. Please add VITE_MAPBOX_ACCESS_TOKEN to your .env");
-      return; // stop here to avoid crashing
-      }
-      mapboxgl.accessToken = token;
+    const token = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+    if (!token) {
+      console.error("❌ Mapbox token missing. Please add VITE_MAPBOX_ACCESS_TOKEN to your .env");
+      return;
+    }
+    mapboxgl.accessToken = token;
 
     const map = new mapboxgl.Map({
       container: mapContainer.current,
@@ -61,17 +61,19 @@ const MapComponent = ({
 
     mapInstance.current = map;
 
+    // Controls
     if (showControls) {
       map.addControl(new mapboxgl.NavigationControl(), "top-right");
       map.addControl(
         new mapboxgl.GeolocateControl({
-          positionOptions: { enableHighAccuracy: true },
+          positionOptions: { enableHighAccuracy: false },
           trackUserLocation: true
         }),
         "top-right"
       );
     }
 
+    // Add draggable or default marker
     if (draggableMarker || markers.length === 0) {
       const newMarker = new mapboxgl.Marker({ color: markerColor, draggable: draggableMarker })
         .setLngLat([location.longitude, location.latitude])
@@ -89,6 +91,7 @@ const MapComponent = ({
       }
     }
 
+    // Extra markers
     if (markers.length > 0) {
       markers.forEach(markerData => {
         try {
@@ -112,6 +115,7 @@ const MapComponent = ({
     };
   }, []);
 
+  // Try to locate user
   const handleLocateMe = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -130,15 +134,20 @@ const MapComponent = ({
         },
         (error) => {
           console.error("Error getting location:", error);
-          alert(`Could not get your location: ${error.message}`);
+          alert("Could not auto-detect location. Please drag the marker to your position.");
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        {
+          enableHighAccuracy: false, // use network/Wi-Fi location
+          timeout: 20000,            // wait up to 20s
+          maximumAge: 10000          // allow cached location (10s old)
+        }
       );
     } else {
       alert("Geolocation not supported by this browser.");
     }
   };
 
+  // SOS button handler
   const handleSendSOS = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -156,7 +165,7 @@ const MapComponent = ({
           console.error("Error getting location for SOS:", error);
           alert(`Could not get your location: ${error.message}`);
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 10000 }
       );
     } else {
       alert("Geolocation not supported by this browser.");
