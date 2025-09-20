@@ -10,7 +10,12 @@ const SKILLS = [
   { id: 'fire_safety', label: 'Fire Safety' },
   { id: 'search_rescue', label: 'Search & Rescue' },
   { id: 'medical', label: 'Medical Professional' },
-  { id: 'emergency_response', label: 'Emergency Response' }
+  { id: 'emergency_response', label: 'Emergency Response' },
+  { id: 'police_service', label: 'Police Service' },
+  { id: 'NEMA', label: 'NEMA' },
+  { id: 'FEMA', label: 'FEMA' },
+  { id: 'shop_owner', label: 'Shop Owner' },
+  { id: 'resident', label: 'Resident' }
 ];
 
 const Register = () => {
@@ -34,10 +39,13 @@ const Register = () => {
     const { name, value, type, checked } = e.target;
 
     if (type === 'checkbox') {
-      const updatedSkills = checked
-        ? [...formData.skills, name]
-        : formData.skills.filter(skill => skill !== name);
-
+      let updatedSkills;
+      if (checked) {
+        // only allow one skill at a time
+        updatedSkills = [name];
+      } else {
+        updatedSkills = [];
+      }
       setFormData({ ...formData, skills: updatedSkills });
     } else {
       setFormData({ ...formData, [name]: value });
@@ -76,6 +84,7 @@ const Register = () => {
       )}
 
       <form onSubmit={handleSubmit}>
+        {/* Name */}
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1" htmlFor="name">
             Name
@@ -91,6 +100,7 @@ const Register = () => {
           />
         </div>
 
+        {/* Email */}
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1" htmlFor="email">
             Email
@@ -106,6 +116,7 @@ const Register = () => {
           />
         </div>
 
+        {/* Phone */}
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1" htmlFor="phone">
             Phone Number
@@ -121,6 +132,7 @@ const Register = () => {
           />
         </div>
 
+        {/* Password */}
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1" htmlFor="password">
             Password
@@ -136,6 +148,7 @@ const Register = () => {
           />
         </div>
 
+        {/* Confirm Password */}
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1" htmlFor="confirmPassword">
             Confirm Password
@@ -154,29 +167,41 @@ const Register = () => {
           )}
         </div>
 
+        {/* Roles / Skills */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-2">
-            Emergency Skills (Select all that apply)
+            Role (Select only one)
           </label>
           <div className="grid grid-cols-2 gap-2">
-            {SKILLS.map(skill => (
-              <div key={skill.id} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id={skill.id}
-                  name={skill.id}
-                  checked={formData.skills.includes(skill.id)}
-                  onChange={handleChange}
-                  className="rounded text-red-600 focus:ring-red-400"
-                />
-                <label htmlFor={skill.id} className="text-sm">
-                  {skill.label}
-                </label>
-              </div>
-            ))}
+            {SKILLS.map(skill => {
+              const isSelected = formData.skills.includes(skill.id);
+              const hasSelection = formData.skills.length > 0;
+              const isDisabled = !isSelected && hasSelection;
+
+              return (
+                <div
+                  key={skill.id}
+                  className={`flex items-center space-x-2 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <input
+                    type="checkbox"
+                    id={skill.id}
+                    name={skill.id}
+                    checked={isSelected}
+                    onChange={handleChange}
+                    disabled={isDisabled}
+                    className="rounded text-red-600 focus:ring-red-400"
+                  />
+                  <label htmlFor={skill.id} className="text-sm">
+                    {skill.label}
+                  </label>
+                </div>
+              );
+            })}
           </div>
         </div>
 
+        {/* Submit */}
         <button
           type="submit"
           disabled={loading}

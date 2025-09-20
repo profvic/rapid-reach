@@ -10,7 +10,12 @@ const SKILLS = [
   { id: 'fire_safety', label: 'Fire Safety' },
   { id: 'search_rescue', label: 'Search & Rescue' },
   { id: 'medical', label: 'Medical Professional' },
-  { id: 'emergency_response', label: 'Emergency Response' }
+  { id: 'emergency_response', label: 'Emergency Response' },
+  { id: 'police_service', label: 'Police Service' },
+  { id: 'NEMA', label: 'NEMA' },
+  { id: 'FEMA', label: 'FEMA' },
+  { id: 'shop_owner', label: 'Shop Owner' },
+  { id: 'resident', label: 'Resident' }
 ];
 
 const Profile = () => {
@@ -159,7 +164,7 @@ const Profile = () => {
                 
                 <div>
                   <div className="text-xs font-medium text-muted-foreground mb-2">
-                    Emergency Skills
+                    Role
                   </div>
                   {profile.skills && profile.skills.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
@@ -239,7 +244,7 @@ const Profile = () => {
                     
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Emergency Skills
+                        Role
                       </label>
                       <div className="grid grid-cols-2 gap-2">
                         {SKILLS.map(skill => (
