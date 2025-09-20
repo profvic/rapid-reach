@@ -27,7 +27,7 @@ const EmergencyReport = () => {
   const { currentLocation } = useSelector(state => state.user);
   
   // Default to San Francisco if no location is available
-  const defaultLocation = [-122.4194, 37.7749]; // San Francisco coordinates
+  const defaultLocation = [-122.4194, 37.7749];
   const initialCenter = currentLocation || defaultLocation;
   
   const [formData, setFormData] = useState({
@@ -46,7 +46,6 @@ const EmergencyReport = () => {
       latitude: newLocation.latitude
     }));
     
-    // Reverse geocode to get address
     reverseGeocode(newLocation.longitude, newLocation.latitude);
   };
   
@@ -55,14 +54,12 @@ const EmergencyReport = () => {
     if (currentLocation) {
       const [longitude, latitude] = currentLocation;
       
-      // Update form data with location
       setFormData(prev => ({
         ...prev,
         longitude,
         latitude
       }));
       
-      // Reverse geocode initial position
       reverseGeocode(longitude, latitude);
     }
   }, [currentLocation]);
@@ -90,11 +87,6 @@ const EmergencyReport = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
-    // Update marker color if emergency type changes
-    if (name === 'emergencyType') {
-      // The marker color will be updated on the next render
-    }
   };
   
   // Handle form submission
@@ -121,7 +113,6 @@ const EmergencyReport = () => {
       });
   };
   
-  
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Report Emergency</h2>
@@ -143,7 +134,7 @@ const EmergencyReport = () => {
               markerColor="#FF4136"
               draggableMarker={true}
               onLocationChange={handleLocationChange}
-              showSOSButton={false} // Hide SOS button on emergency report page
+              showSOSButton={false}
             />
             {formData.address && (
               <div className="p-3 bg-muted/50 text-sm">
@@ -156,6 +147,7 @@ const EmergencyReport = () => {
         <div>
           <div className="bg-card rounded-lg shadow-md p-4">
             <form onSubmit={handleSubmit}>
+              {/* Emergency Type */}
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">
                   Emergency Type
@@ -165,10 +157,10 @@ const EmergencyReport = () => {
                     <label
                       key={type.id}
                       className={`
-                        flex items-center p-3 rounded-md border cursor-pointer
+                        flex items-center p-3 rounded-md border cursor-pointer transition-colors
                         ${formData.emergencyType === type.id 
-                          ? 'border-primary bg-primary/10' 
-                          : 'border-input hover:bg-muted'}
+                          ? 'border-red-600 bg-red-100' 
+                          : 'border-input hover:border-red-500 hover:bg-red-50'}
                       `}
                     >
                       <input
@@ -189,6 +181,7 @@ const EmergencyReport = () => {
                 </div>
               </div>
               
+              {/* Description */}
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1" htmlFor="description">
                   Description
@@ -199,23 +192,25 @@ const EmergencyReport = () => {
                   value={formData.description}
                   onChange={handleChange}
                   rows="4"
-                  className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                   placeholder="Describe the emergency situation..."
                   required
                 />
               </div>
               
+              {/* Error Message */}
               {error && (
-                <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md mb-4 text-sm">
+                <div className="bg-red-100 text-red-600 px-4 py-3 rounded-md mb-4 text-sm">
                   {error}
                 </div>
               )}
               
+              {/* Submit Button */}
               <div className="flex justify-end">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex items-center bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors disabled:opacity-70"
+                  className="flex items-center bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors disabled:opacity-70"
                 >
                   {loading ? (
                     'Reporting...'
