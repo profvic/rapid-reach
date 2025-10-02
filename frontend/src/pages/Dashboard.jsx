@@ -232,6 +232,13 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      <button
+  className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded"
+  onClick={() => navigate("/analytics")}
+>
+  View Analytics Dashboard
+</button>
+
 
       {/* Charts */}
       <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">

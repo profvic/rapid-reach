@@ -14,7 +14,7 @@ import EmergencyReport from './pages/EmergencyReport';
 import EmergencyDetail from './pages/EmergencyDetail';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
-
+import AnalyticsDashboard from './pages/AnalyticsDashboard';
 // Layout
 import AppLayout from './layouts/AppLayout';
 import AuthLayout from './layouts/AuthLayout';
@@ -58,6 +58,7 @@ function App() {
           }
         >
           <Route path="/" element={<Dashboard />} />
+          <Route path="/analytics" element={<AnalyticsDashboard />} />
           <Route path="/report" element={<EmergencyReport />} />
           <Route path="/emergency/:id" element={<EmergencyDetail />} />
           <Route path="/profile" element={<Profile />} />
