@@ -18,6 +18,7 @@ import NotFound from './pages/NotFound';
 // Layout
 import AppLayout from './layouts/AppLayout';
 import AuthLayout from './layouts/AuthLayout';
+import InstallPrompt from './components/InstallPrompt';
 
 function App() {
   const dispatch = useDispatch();
@@ -67,6 +68,7 @@ function App() {
       </Routes>
       
       <Toaster />
+       <InstallPrompt />
     </>
   );
 }

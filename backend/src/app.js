@@ -106,6 +106,20 @@ mongoose
     process.exit(1);
   });
 
+// ✅ Serve React frontend (built with Vite)
+const distPath = path.join(__dirname, "../dist");
+app.use(express.static(distPath));
+
+// ✅ Serve PWA files at root
+app.get("/manifest.webmanifest", (req, res) => {
+  res.sendFile(path.join(distPath, "manifest.webmanifest"));
+});
+
+app.get("/sw.js", (req, res) => {
+  res.sendFile(path.join(distPath, "sw.js"));
+});
+
+
 // ✅ Serve React frontend
 app.use(express.static(path.join(__dirname, "../dist")));
 
