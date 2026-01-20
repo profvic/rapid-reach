@@ -25,124 +25,86 @@ ChartJS.register(
   Legend
 )
 
-// 📍 Reference Fire Station (Port Harcourt)
-const STATION = {
-  lat: 4.8156,
-  lng: 7.0498,
-}
-
-// 🌍 Haversine Distance (km)
-const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371
-  const dLat = ((lat2 - lat1) * Math.PI) / 180
-  const dLon = ((lon2 - lon1) * Math.PI) / 180
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2
-  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)))
-}
-
 const AnalyticsDashboard = () => {
-  const reduxEmergencies = useSelector((state) => state.emergency.emergencies)
-  const [emergencies, setEmergencies] = useState([])
+  const { emergencies } = useSelector((state) => state.emergency)
 
   const [stats, setStats] = useState({
-    total: 0,
-    responded: 0,
+    totalIncidents: 0,
     avgResponseTime: 0,
     successRate: 0,
-    monthly: {},
-    types: {},
-    distance: {},
+    highRiskAreas: 0,
+    monthlyData: {},
+    typeData: {},
     responseTimes: [],
+    locationData: {},
+    respondedCount: 0, // ✅ added
   })
 
-  // 🔹 REAL BACKEND CALL
-  useEffect(() => {
-    fetch("/api/emergencies")
-      .then((res) => res.json())
-      .then(setEmergencies)
-      .catch(() => setEmergencies(reduxEmergencies))
-  }, [reduxEmergencies])
-
-  // 🔹 PROCESS DATA
   useEffect(() => {
     if (!emergencies || emergencies.length === 0) return
 
-    const total = emergencies.length
-    const responded = emergencies.filter(
-      (e) => e.responders && e.responders.length > 0
-    ).length
+    // --- Total Incidents ---
+    const totalIncidents = emergencies.length
 
-    // ⏱ Response Time Trend
+    // --- Response Times ---
     const responseTimes = emergencies
-      .filter((e) => e.createdAt && e.respondedAt)
-      .map((e) => {
-        const created = new Date(e.createdAt)
-        const responded = new Date(e.respondedAt)
-        return ((responded - created) / 60000).toFixed(1)
-      })
+      .filter((e) => e.respondedAt && e.createdAt)
+      .map(
+        (e) =>
+          (new Date(e.respondedAt) - new Date(e.createdAt)) / (1000 * 60)
+      )
 
     const avgResponseTime =
       responseTimes.length > 0
         ? (
-            responseTimes.reduce((a, b) => a + Number(b), 0) /
+            responseTimes.reduce((a, b) => a + b, 0) /
             responseTimes.length
           ).toFixed(1)
         : 0
 
-    // 📅 Monthly
-    const monthly = {}
+    // --- Responded Count ---
+    const respondedCount = emergencies.filter(
+      (e) => e.responders && e.responders.length > 0
+    ).length
+
+    const successRate = ((respondedCount / totalIncidents) * 100).toFixed(1)
+
+    // --- High Risk Areas ---
+    const locationCounts = {}
     emergencies.forEach((e) => {
-      const m = new Date(e.createdAt).toLocaleString("default", {
+      const loc = e.location?.address?.split(",")[0] || "Unknown"
+      locationCounts[loc] = (locationCounts[loc] || 0) + 1
+    })
+    const highRiskAreas = Object.values(locationCounts).filter(
+      (c) => c > 3
+    ).length
+
+    // --- Monthly Trends ---
+    const monthlyCounts = {}
+    emergencies.forEach((e) => {
+      const month = new Date(e.createdAt).toLocaleString("default", {
         month: "short",
       })
-      monthly[m] = (monthly[m] || 0) + 1
+      monthlyCounts[month] = (monthlyCounts[month] || 0) + 1
     })
 
-    // 🔥 Incident Types
-    const types = {}
+    // --- Type Distribution ---
+    const typeCounts = {}
     emergencies.forEach((e) => {
-      types[e.emergencyType] = (types[e.emergencyType] || 0) + 1
-    })
-
-    // 📍 Distance Buckets
-    const distance = {
-      "0–1km": 0,
-      "1–3km": 0,
-      "3–5km": 0,
-      "5–10km": 0,
-      "10km+": 0,
-    }
-
-    emergencies.forEach((e) => {
-      if (!e.location?.latitude || !e.location?.longitude) return
-
-      const d = calculateDistance(
-        STATION.lat,
-        STATION.lng,
-        e.location.latitude,
-        e.location.longitude
-      )
-
-      if (d <= 1) distance["0–1km"]++
-      else if (d <= 3) distance["1–3km"]++
-      else if (d <= 5) distance["3–5km"]++
-      else if (d <= 10) distance["5–10km"]++
-      else distance["10km+"]++
+      typeCounts[e.emergencyType] =
+        (typeCounts[e.emergencyType] || 0) + 1
     })
 
     setStats({
-      total,
-      responded,
+      totalIncidents,
       avgResponseTime,
-      successRate: ((responded / total) * 100).toFixed(1),
-      monthly,
-      types,
-      distance,
+      successRate,
+      highRiskAreas,
+      monthlyData: monthlyCounts,
+      typeData: typeCounts,
       responseTimes,
+      locationData: locationCounts,
+      respondedCount,
     })
   }, [emergencies])
 
@@ -150,53 +112,84 @@ const AnalyticsDashboard = () => {
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Incident Analytics</h1>
 
-      {/* KPI CARDS */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {[
-          ["Total Incidents", stats.total],
-          ["Responded", stats.responded],
-          ["Avg Response Time", `${stats.avgResponseTime} min`],
-          ["Success Rate", `${stats.successRate}%`],
-        ].map(([label, value]) => (
-          <div key={label} className="bg-card rounded-lg shadow p-4">
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <h2 className="text-2xl font-bold">{value}</h2>
-          </div>
-        ))}
+        <div className="bg-card rounded-lg shadow p-4">
+          <p className="text-sm text-muted-foreground">Total Incidents</p>
+          <h2 className="text-2xl font-bold">{stats.totalIncidents}</h2>
+        </div>
+        <div className="bg-card rounded-lg shadow p-4">
+          <p className="text-sm text-muted-foreground">Avg Response Time</p>
+          <h2 className="text-2xl font-bold">
+            {stats.avgResponseTime} min
+          </h2>
+        </div>
+        <div className="bg-card rounded-lg shadow p-4">
+          <p className="text-sm text-muted-foreground">Success Rate</p>
+          <h2 className="text-2xl font-bold">{stats.successRate}%</h2>
+        </div>
+        <div className="bg-card rounded-lg shadow p-4">
+          <p className="text-sm text-muted-foreground">High Risk Areas</p>
+          <h2 className="text-2xl font-bold">{stats.highRiskAreas}</h2>
+        </div>
       </div>
 
-      {/* ROW 1 */}
+      {/* ✅ NEW: Reported vs Responded */}
+      <div className="bg-card rounded-lg shadow p-4 max-w-md">
+        <h2 className="text-lg font-semibold mb-4">
+          Reported vs Responded Incidents
+        </h2>
+        <Doughnut
+          data={{
+            labels: ["Reported", "Responded"],
+            datasets: [
+              {
+                data: [
+                  stats.totalIncidents,
+                  stats.respondedCount,
+                ],
+                backgroundColor: ["#EF4444", "#22C55E"],
+              },
+            ],
+          }}
+        />
+      </div>
+
+      {/* Existing Charts (UNCHANGED) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Reported vs Responded */}
         <div className="bg-card rounded-lg shadow p-4">
-          <h2 className="font-semibold mb-4">Reported vs Responded</h2>
-          <Doughnut
+          <h2 className="text-lg font-semibold mb-4">
+            Monthly Incident Trends
+          </h2>
+          <Bar
             data={{
-              labels: ["Reported", "Responded"],
+              labels: Object.keys(stats.monthlyData),
               datasets: [
                 {
-                  data: [stats.total, stats.responded],
-                  backgroundColor: ["#EF4444", "#22C55E"],
+                  label: "Incidents",
+                  data: Object.values(stats.monthlyData),
+                  backgroundColor: "#EF4444",
                 },
               ],
             }}
           />
         </div>
 
-        {/* Incident Types */}
         <div className="bg-card rounded-lg shadow p-4">
-          <h2 className="font-semibold mb-4">Incident by Type</h2>
+          <h2 className="text-lg font-semibold mb-4">
+            Incident Types Distribution
+          </h2>
           <Doughnut
             data={{
-              labels: Object.keys(stats.types),
+              labels: Object.keys(stats.typeData),
               datasets: [
                 {
-                  data: Object.values(stats.types),
+                  data: Object.values(stats.typeData),
                   backgroundColor: [
                     "#EF4444",
                     "#F97316",
                     "#22C55E",
-                    "#3B82F6",
+                    "#EAB308",
                   ],
                 },
               ],
@@ -205,61 +198,42 @@ const AnalyticsDashboard = () => {
         </div>
       </div>
 
-      {/* ROW 2 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Monthly */}
         <div className="bg-card rounded-lg shadow p-4">
-          <h2 className="font-semibold mb-4">Monthly Incidents</h2>
+          <h2 className="text-lg font-semibold mb-4">
+            Response Time Trends
+          </h2>
+          <Line
+            data={{
+              labels: stats.responseTimes.map((_, i) => i + 1),
+              datasets: [
+                {
+                  label: "Response Time (min)",
+                  data: stats.responseTimes,
+                  borderColor: "#3B82F6",
+                },
+              ],
+            }}
+          />
+        </div>
+
+        <div className="bg-card rounded-lg shadow p-4">
+          <h2 className="text-lg font-semibold mb-4">
+            Incidents by Location
+          </h2>
           <Bar
             data={{
-              labels: Object.keys(stats.monthly),
+              labels: Object.keys(stats.locationData),
               datasets: [
                 {
                   label: "Incidents",
-                  data: Object.values(stats.monthly),
+                  data: Object.values(stats.locationData),
                   backgroundColor: "#6366F1",
                 },
               ],
             }}
           />
         </div>
-
-        {/* Distance */}
-        <div className="bg-card rounded-lg shadow p-4">
-          <h2 className="font-semibold mb-4">Incidents by Distance</h2>
-          <Line
-            data={{
-              labels: Object.keys(stats.distance),
-              datasets: [
-                {
-                  label: "Incidents",
-                  data: Object.values(stats.distance),
-                  borderColor: "#0EA5E9",
-                  tension: 0.4,
-                },
-              ],
-            }}
-          />
-        </div>
-      </div>
-
-      {/* RESPONSE TIME TREND (RESTORED ✅) */}
-      <div className="bg-card rounded-lg shadow p-4">
-        <h2 className="font-semibold mb-4">Response Time Trend</h2>
-        <Line
-          data={{
-            labels: stats.responseTimes.map((_, i) => `Incident ${i + 1}`),
-            datasets: [
-              {
-                label: "Response Time (minutes)",
-                data: stats.responseTimes,
-                borderColor: "#F59E0B",
-                backgroundColor: "#F59E0B",
-                tension: 0.3,
-              },
-            ],
-          }}
-        />
       </div>
     </div>
   )
