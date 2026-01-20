@@ -242,34 +242,7 @@ const Dashboard = () => {
 
 
       {/* Charts */}
-      <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        
-
-        {/* Doughnut Chart */}
-        <div className="bg-card rounded-lg shadow-md p-4">
-          <h2 className="text-lg font-semibold mb-4">Reported vs Responded</h2>
-          <Doughnut
-            data={{
-              labels: ["Reported", "Responded"],
-              datasets: [
-                {
-                  label: "Count",
-                  data: [reportStats.reported, reportStats.responded],
-                  backgroundColor: ["#6366F1", "#10B981"],
-                },
-              ],
-            }}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: {
-                  position: "bottom",
-                },
-              },
-            }}
-          />
-        </div>
-      </div>
+     
     </div>
   )
 }
