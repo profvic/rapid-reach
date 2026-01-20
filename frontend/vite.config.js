@@ -35,9 +35,7 @@ export default defineConfig({
 
       // 🚫 Dev fix (THIS removes the warning permanently)
       devOptions: {
-        enabled: true,
-        type: 'module',
-        navigateFallback: undefined, // ⬅ stops Workbox precache in dev
+        enabled: false, // ⬅ disables SW + precache in dev
       },
     }),
   ],
