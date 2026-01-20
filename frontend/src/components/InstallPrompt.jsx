@@ -43,7 +43,7 @@ export default function InstallPrompt() {
             margin: '10px',
           }}
         >
-          📲 Install FireSOS App
+          📲 Install FireAlert App
         </button>
       )}
     </>
