@@ -108,77 +108,57 @@ const AnalyticsDashboard = () => {
     })
   }, [emergencies])
 
-  return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Incident Analytics</h1>
+return (
+  <div className="p-6 space-y-10">
+    <h1 className="text-2xl font-bold">Incident Analytics</h1>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-card rounded-lg shadow p-4">
-          <p className="text-sm text-muted-foreground">Total Incidents</p>
-          <h2 className="text-2xl font-bold">{stats.totalIncidents}</h2>
+    {/* Stats */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {[
+        { label: "Total Incidents", value: stats.totalIncidents },
+        { label: "Avg Response Time", value: `${stats.avgResponseTime} min` },
+        { label: "Success Rate", value: `${stats.successRate}%` },
+        { label: "High Risk Areas", value: stats.highRiskAreas },
+      ].map((item, i) => (
+        <div key={i} className="bg-card rounded-lg shadow p-4">
+          <p className="text-sm text-muted-foreground">{item.label}</p>
+          <h2 className="text-2xl font-bold">{item.value}</h2>
         </div>
-        <div className="bg-card rounded-lg shadow p-4">
-          <p className="text-sm text-muted-foreground">Avg Response Time</p>
-          <h2 className="text-2xl font-bold">
-            {stats.avgResponseTime} min
-          </h2>
-        </div>
-        <div className="bg-card rounded-lg shadow p-4">
-          <p className="text-sm text-muted-foreground">Success Rate</p>
-          <h2 className="text-2xl font-bold">{stats.successRate}%</h2>
-        </div>
-        <div className="bg-card rounded-lg shadow p-4">
-          <p className="text-sm text-muted-foreground">High Risk Areas</p>
-          <h2 className="text-2xl font-bold">{stats.highRiskAreas}</h2>
-        </div>
-      </div>
+      ))}
+    </div>
 
-      {/* ✅ NEW: Reported vs Responded */}
-      <div className="bg-card rounded-lg shadow p-4 max-w-md">
-        <h2 className="text-lg font-semibold mb-4">
-          Reported vs Responded Incidents
+    {/* Small Charts Row */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Reported vs Responded */}
+      <div className="bg-card rounded-lg shadow p-4">
+        <h2 className="text-lg font-semibold mb-4 text-center">
+          Reported vs Responded
         </h2>
-        <Doughnut
-          data={{
-            labels: ["Reported", "Responded"],
-            datasets: [
-              {
-                data: [
-                  stats.totalIncidents,
-                  stats.respondedCount,
-                ],
-                backgroundColor: ["#EF4444", "#22C55E"],
-              },
-            ],
-          }}
-        />
-      </div>
-
-      {/* Existing Charts (UNCHANGED) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-card rounded-lg shadow p-4">
-          <h2 className="text-lg font-semibold mb-4">
-            Monthly Incident Trends
-          </h2>
-          <Bar
+        <div className="h-64 max-w-xs mx-auto">
+          <Doughnut
             data={{
-              labels: Object.keys(stats.monthlyData),
+              labels: ["Reported", "Responded"],
               datasets: [
                 {
-                  label: "Incidents",
-                  data: Object.values(stats.monthlyData),
-                  backgroundColor: "#EF4444",
+                  data: [
+                    stats.totalIncidents,
+                    stats.respondedCount,
+                  ],
+                  backgroundColor: ["#EF4444", "#22C55E"],
                 },
               ],
             }}
+            options={{ maintainAspectRatio: false }}
           />
         </div>
+      </div>
 
-        <div className="bg-card rounded-lg shadow p-4">
-          <h2 className="text-lg font-semibold mb-4">
-            Incident Types Distribution
-          </h2>
+      {/* Incident Types */}
+      <div className="bg-card rounded-lg shadow p-4">
+        <h2 className="text-lg font-semibold mb-4 text-center">
+          Incident Types
+        </h2>
+        <div className="h-64 max-w-xs mx-auto">
           <Doughnut
             data={{
               labels: Object.keys(stats.typeData),
@@ -194,33 +174,64 @@ const AnalyticsDashboard = () => {
                 },
               ],
             }}
+            options={{ maintainAspectRatio: false }}
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-card rounded-lg shadow p-4">
-          <h2 className="text-lg font-semibold mb-4">
-            Response Time Trends
-          </h2>
+      {/* Monthly Trend */}
+      <div className="bg-card rounded-lg shadow p-4">
+        <h2 className="text-lg font-semibold mb-4 text-center">
+          Monthly Trends
+        </h2>
+        <div className="h-64">
+          <Bar
+            data={{
+              labels: Object.keys(stats.monthlyData),
+              datasets: [
+                {
+                  label: "Incidents",
+                  data: Object.values(stats.monthlyData),
+                  backgroundColor: "#EF4444",
+                },
+              ],
+            }}
+            options={{ maintainAspectRatio: false }}
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* Large Charts Row */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Response Time */}
+      <div className="bg-card rounded-lg shadow p-4">
+        <h2 className="text-lg font-semibold mb-4">
+          Response Time Trend
+        </h2>
+        <div className="h-80">
           <Line
             data={{
               labels: stats.responseTimes.map((_, i) => i + 1),
               datasets: [
                 {
-                  label: "Response Time (min)",
+                  label: "Minutes",
                   data: stats.responseTimes,
                   borderColor: "#3B82F6",
                 },
               ],
             }}
+            options={{ maintainAspectRatio: false }}
           />
         </div>
+      </div>
 
-        <div className="bg-card rounded-lg shadow p-4">
-          <h2 className="text-lg font-semibold mb-4">
-            Incidents by Location
-          </h2>
+      {/* Location Distribution */}
+      <div className="bg-card rounded-lg shadow p-4">
+        <h2 className="text-lg font-semibold mb-4">
+          Incidents by Location
+        </h2>
+        <div className="h-80">
           <Bar
             data={{
               labels: Object.keys(stats.locationData),
@@ -232,11 +243,14 @@ const AnalyticsDashboard = () => {
                 },
               ],
             }}
+            options={{ maintainAspectRatio: false }}
           />
         </div>
       </div>
     </div>
-  )
+  </div>
+)
+
 }
 
 export default AnalyticsDashboard
